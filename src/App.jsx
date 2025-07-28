@@ -4,6 +4,11 @@ import Dashboard from './components/Dashboard';
 import CRM from './components/CRM';
 import KanbanBoard from './components/KanbanBoard';
 import SocialMedia from './components/SocialMedia';
+import ObraMonitoramento from './components/ObraMonitoramento';
+import Projetos from './components/Projetos';
+import Recursos from './components/Recursos';
+import Relatorios from './components/Relatorios';
+import Configuracoes from './components/Configuracoes';
 import './App.css';
 
 function App() {
@@ -20,20 +25,16 @@ function App() {
         return <KanbanBoard />;
       case 'social':
         return <SocialMedia />;
-      case 'maintenance':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Módulo de Manutenção</h2>
-            <p className="text-gray-600">Em desenvolvimento...</p>
-          </div>
-        );
+      case 'obra-monitoramento':
+        return <ObraMonitoramento />;
+      case 'projetos':
+        return <Projetos />;
+      case 'recursos':
+        return <Recursos />;
+      case 'relatorios':
+        return <Relatorios />;
       case 'settings':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Configurações</h2>
-            <p className="text-gray-600">Em desenvolvimento...</p>
-          </div>
-        );
+        return <Configuracoes />;
       default:
         return <Dashboard />;
     }
