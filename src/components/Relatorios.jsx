@@ -374,7 +374,7 @@ const Relatorios = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-red-600">3%</div>
-            <p className="text-sm text-gray-600">Meta: <5%</p>
+            <p className="text-sm text-gray-600">Meta: &lt;5%</p>
           </CardContent>
         </Card>
 
