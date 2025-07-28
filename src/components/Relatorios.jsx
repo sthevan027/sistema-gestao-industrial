@@ -355,88 +355,92 @@ const Relatorios = () => {
     </div>
   );
 
-  const renderRelatorioQualidade = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Conformidade Geral</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">97%</div>
-            <p className="text-sm text-gray-600">Meta: 95%</p>
-          </CardContent>
-        </Card>
+  const renderRelatorioQualidade = () => {
+    const metaText = "Meta: <5%";
+    
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Conformidade Geral</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-600">97%</div>
+              <p className="text-sm text-gray-600">Meta: 95%</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Taxa de Rejeição</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-600">3%</div>
-            <p className="text-sm text-gray-600">Meta: &lt;5%</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Taxa de Rejeição</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-red-600">3%</div>
+              <p className="text-sm text-gray-600">{metaText}</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Inspeções Realizadas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">156</div>
-            <p className="text-sm text-gray-600">Este mês</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Inspeções Realizadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">156</div>
+              <p className="text-sm text-gray-600">Este mês</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>NCRs Abertas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-yellow-600">8</div>
-            <p className="text-sm text-gray-600">Em análise</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>NCRs Abertas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-yellow-600">8</div>
+              <p className="text-sm text-gray-600">Em análise</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Evolução da Qualidade</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={dadosQualidade}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="conformidade" stroke="#10b981" strokeWidth={2} name="Conformidade (%)" />
+                  <Line type="monotone" dataKey="rejeicao" stroke="#ef4444" strokeWidth={2} name="Rejeição (%)" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Segurança - Incidentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={dadosSeguranca}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="incidentes" fill="#ef4444" name="Incidentes" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Evolução da Qualidade</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={dadosQualidade}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="conformidade" stroke="#10b981" strokeWidth={2} name="Conformidade (%)" />
-                <Line type="monotone" dataKey="rejeicao" stroke="#ef4444" strokeWidth={2} name="Rejeição (%)" />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Segurança - Incidentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dadosSeguranca}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="incidentes" fill="#ef4444" name="Incidentes" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
