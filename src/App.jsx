@@ -15,28 +15,38 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
 
   const renderPage = () => {
-    switch (currentPage) {
-      case 'dashboard':
-      case 'analytics':
-        return <Dashboard />;
-      case 'crm':
-        return <CRM />;
-      case 'kanban':
-        return <KanbanBoard />;
-      case 'social':
-        return <SocialMedia />;
-      case 'obra-monitoramento':
-        return <ObraMonitoramento />;
-      case 'projetos':
-        return <Projetos />;
-      case 'recursos':
-        return <Recursos />;
-      case 'relatorios':
-        return <Relatorios />;
-      case 'settings':
-        return <Configuracoes />;
-      default:
-        return <Dashboard />;
+    try {
+      switch (currentPage) {
+        case 'dashboard':
+        case 'analytics':
+          return <Dashboard />;
+        case 'crm':
+          return <CRM />;
+        case 'kanban':
+          return <KanbanBoard />;
+        case 'social':
+          return <SocialMedia />;
+        case 'obra-monitoramento':
+          return <ObraMonitoramento />;
+        case 'projetos':
+          return <Projetos />;
+        case 'recursos':
+          return <Recursos />;
+        case 'relatorios':
+          return <Relatorios />;
+        case 'settings':
+          return <Configuracoes />;
+        default:
+          return <Dashboard />;
+      }
+    } catch (error) {
+      console.error('Erro ao renderizar página:', error);
+      return (
+        <div className="p-6 text-white">
+          <h1>Erro na renderização</h1>
+          <p>{error.message}</p>
+        </div>
+      );
     }
   };
 
