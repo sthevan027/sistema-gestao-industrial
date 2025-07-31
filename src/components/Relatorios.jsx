@@ -356,8 +356,9 @@ const Relatorios = () => {
   );
 
   const renderRelatorioQualidade = () => {
+    // Corrigido para evitar erro de sintaxe no JSX
     const metaText = "Meta: <5%";
-    
+    const metaTextSafe = "Meta: \u003c5%"; // Alternativa segura
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -377,7 +378,7 @@ const Relatorios = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-red-600">3%</div>
-              <p className="text-sm text-gray-600">{metaText}</p>
+              <p className="text-sm text-gray-600">Meta: &lt;5%</p>
             </CardContent>
           </Card>
 
