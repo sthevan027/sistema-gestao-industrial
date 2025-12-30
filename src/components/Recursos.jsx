@@ -4,6 +4,10 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Progress } from './ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { toast } from 'sonner';
 import { 
   Wrench, 
   Users, 
@@ -25,8 +29,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const Recursos = () => {
   const [activeTab, setActiveTab] = useState('equipamentos');
   const [searchTerm, setSearchTerm] = useState('');
+  const [adicionarRecursoDialogOpen, setAdicionarRecursoDialogOpen] = useState(false);
+  const [recursoTipo, setRecursoTipo] = useState(null);
+  const [detalhesEquipamento, setDetalhesEquipamento] = useState(null);
+  const [recursoFormData, setRecursoFormData] = useState({
+    nome: '',
+    tipo: '',
+    localizacao: '',
+    categoria: ''
+  });
 
-  const equipamentos = [
+  const [equipamentos, setEquipamentos] = useState([
     {
       id: 1,
       nome: 'Betoneira B-01',
@@ -71,9 +84,9 @@ const Recursos = () => {
       horasUso: 45,
       eficiencia: 92
     }
-  ];
+  ]);
 
-  const funcionarios = [
+  const [funcionarios, setFuncionarios] = useState([
     {
       id: 1,
       nome: 'João Silva',
@@ -110,9 +123,9 @@ const Recursos = () => {
       horasTrabalhadas: 180,
       eficiencia: 85
     }
-  ];
+  ]);
 
-  const materiais = [
+  const [materiais, setMateriais] = useState([
     {
       id: 1,
       nome: 'Cimento',
@@ -149,7 +162,7 @@ const Recursos = () => {
       estoqueMinimo: 80,
       status: 'adequado'
     }
-  ];
+  ]);
 
   const dadosEficiencia = [
     { mes: 'Jan', equipamentos: 92, funcionarios: 88 },
@@ -186,6 +199,56 @@ const Recursos = () => {
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  const handleAdicionarRecurso = () => {
+    if (!recursoFormData.nome || !recursoTipo) return;
+
+    if (recursoTipo === 'equipamento') {
+      const novoEquipamento = {
+        id: equipamentos.length + 1,
+        nome: recursoFormData.nome,
+        tipo: recursoFormData.tipo || 'Equipamento',
+        status: 'ativo',
+        localizacao: recursoFormData.localizacao || 'Almoxarifado',
+        ultimaManutencao: new Date().toISOString().split('T')[0],
+        proximaManutencao: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        horasUso: 0,
+        eficiencia: 100
+      };
+      setEquipamentos([...equipamentos, novoEquipamento]);
+    } else if (recursoTipo === 'funcionario') {
+      const novoFuncionario = {
+        id: funcionarios.length + 1,
+        nome: recursoFormData.nome,
+        cargo: recursoFormData.tipo || 'Funcionário',
+        status: 'ativo',
+        projeto: 'A ser alocado',
+        horasTrabalhadas: 0,
+        eficiencia: 100
+      };
+      setFuncionarios([...funcionarios, novoFuncionario]);
+    } else if (recursoTipo === 'material') {
+      const novoMaterial = {
+        id: materiais.length + 1,
+        nome: recursoFormData.nome,
+        categoria: recursoFormData.categoria || 'Material',
+        quantidade: 0,
+        unidade: 'un',
+        estoqueMinimo: 10,
+        status: 'adequado'
+      };
+      setMateriais([...materiais, novoMaterial]);
+    }
+
+    setRecursoFormData({
+      nome: '',
+      tipo: '',
+      localizacao: '',
+      categoria: ''
+    });
+    setRecursoTipo(null);
+    setAdicionarRecursoDialogOpen(false);
   };
 
   const renderEquipamentos = () => (
@@ -226,10 +289,18 @@ const Recursos = () => {
               </div>
               
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setDetalhesEquipamento(equipamento)}
+                >
                   Detalhes
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => toast.info(`Agendando manutenção para ${equipamento.nome}. Próxima manutenção: ${formatDate(equipamento.proximaManutencao)}`)}
+                >
                   Manutenção
                 </Button>
               </div>
@@ -274,10 +345,18 @@ const Recursos = () => {
               </div>
               
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => toast.info(`Visualizando perfil de ${funcionario.nome}`)}
+                >
                   Perfil
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => toast.info(`Gerando relatório de ${funcionario.nome}...`)}
+                >
                   Relatório
                 </Button>
               </div>
@@ -331,10 +410,18 @@ const Recursos = () => {
                 </div>
                 
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast.info(`Solicitação de ${material.nome} criada!`)}
+                  >
                     Solicitar
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast.info(`Visualizando histórico de ${material.nome}`)}
+                  >
                     Histórico
                   </Button>
                 </div>
@@ -354,10 +441,111 @@ const Recursos = () => {
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Recursos</h1>
           <p className="text-gray-600 mt-2">Controle de equipamentos, funcionários e materiais</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Recurso
-        </Button>
+        <Dialog open={adicionarRecursoDialogOpen} onOpenChange={setAdicionarRecursoDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Recurso
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Adicionar Recurso</DialogTitle>
+              <DialogDescription>
+                Selecione o tipo de recurso que deseja adicionar
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="tipo-recurso">Tipo de Recurso</Label>
+                <Select value={recursoTipo || ''} onValueChange={(value) => setRecursoTipo(value)}>
+                  <SelectTrigger id="tipo-recurso">
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="equipamento">Equipamento</SelectItem>
+                    <SelectItem value="funcionario">Funcionário</SelectItem>
+                    <SelectItem value="material">Material</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {recursoTipo && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="nome-recurso">Nome</Label>
+                    <Input 
+                      id="nome-recurso" 
+                      placeholder="Nome do recurso"
+                      value={recursoFormData.nome}
+                      onChange={(e) => setRecursoFormData({...recursoFormData, nome: e.target.value})}
+                    />
+                  </div>
+                  {recursoTipo === 'equipamento' && (
+                    <>
+                      <div className="grid gap-2">
+                        <Label htmlFor="tipo-equipamento">Tipo de Equipamento</Label>
+                        <Input 
+                          id="tipo-equipamento" 
+                          placeholder="Ex: Betoneira, Escavadeira"
+                          value={recursoFormData.tipo}
+                          onChange={(e) => setRecursoFormData({...recursoFormData, tipo: e.target.value})}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="localizacao-recurso">Localização</Label>
+                        <Input 
+                          id="localizacao-recurso" 
+                          placeholder="Setor/Localização"
+                          value={recursoFormData.localizacao}
+                          onChange={(e) => setRecursoFormData({...recursoFormData, localizacao: e.target.value})}
+                        />
+                      </div>
+                    </>
+                  )}
+                  {recursoTipo === 'funcionario' && (
+                    <div className="grid gap-2">
+                      <Label htmlFor="cargo-funcionario">Cargo</Label>
+                      <Input 
+                        id="cargo-funcionario" 
+                        placeholder="Ex: Mestre de Obra, Pedreiro"
+                        value={recursoFormData.tipo}
+                        onChange={(e) => setRecursoFormData({...recursoFormData, tipo: e.target.value})}
+                      />
+                    </div>
+                  )}
+                  {recursoTipo === 'material' && (
+                    <div className="grid gap-2">
+                      <Label htmlFor="categoria-material">Categoria</Label>
+                      <Input 
+                        id="categoria-material" 
+                        placeholder="Ex: Material de Construção, Ferragem"
+                        value={recursoFormData.categoria}
+                        onChange={(e) => setRecursoFormData({...recursoFormData, categoria: e.target.value})}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setAdicionarRecursoDialogOpen(false);
+                setRecursoTipo(null);
+                setRecursoFormData({
+                  nome: '',
+                  tipo: '',
+                  localizacao: '',
+                  categoria: ''
+                });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAdicionarRecurso}>
+                Adicionar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Estatísticas */}
@@ -492,6 +680,36 @@ const Recursos = () => {
           {activeTab === 'materiais' && renderMateriais()}
         </CardContent>
       </Card>
+
+      {/* Dialog de Detalhes do Equipamento */}
+      {detalhesEquipamento && (
+        <Dialog open={!!detalhesEquipamento} onOpenChange={() => setDetalhesEquipamento(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{detalhesEquipamento.nome}</DialogTitle>
+              <DialogDescription>Detalhes do equipamento</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label className="text-sm text-gray-600">Tipo</Label>
+                <p className="font-medium">{detalhesEquipamento.tipo}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-gray-600">Localização</Label>
+                <p className="font-medium">{detalhesEquipamento.localizacao}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-gray-600">Eficiência</Label>
+                <p className="font-medium">{detalhesEquipamento.eficiencia}%</p>
+              </div>
+              <div>
+                <Label className="text-sm text-gray-600">Próxima Manutenção</Label>
+                <p className="font-medium">{formatDate(detalhesEquipamento.proximaManutencao)}</p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

@@ -5,6 +5,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { toast } from 'sonner';
 import { 
   Settings, 
   Bell, 
@@ -20,6 +22,35 @@ import {
 
 const Configuracoes = () => {
   const [activeTab, setActiveTab] = useState('geral');
+  const [adicionarUsuarioDialogOpen, setAdicionarUsuarioDialogOpen] = useState(false);
+  const [editarUsuario, setEditarUsuario] = useState(null);
+  const [usuarioEditFormData, setUsuarioEditFormData] = useState({
+    nome: '',
+    email: '',
+    cargo: ''
+  });
+
+  const handleEditUsuario = () => {
+    if (!editarUsuario || !usuarioEditFormData.nome) return;
+
+    setUsuariosList(usuariosList.map(u => 
+      u.id === editarUsuario.id 
+        ? { 
+            ...u, 
+            nome: usuarioEditFormData.nome,
+            email: usuarioEditFormData.email,
+            cargo: usuarioEditFormData.cargo
+          }
+        : u
+    ));
+    setEditarUsuario(null);
+    setUsuarioEditFormData({
+      nome: '',
+      email: '',
+      cargo: ''
+    });
+    toast.success('Usuário atualizado com sucesso!');
+  };
   const [notificacoes, setNotificacoes] = useState({
     email: true,
     push: false,
@@ -45,7 +76,7 @@ const Configuracoes = () => {
     tema: 'claro'
   });
 
-  const usuarios = [
+  const [usuariosList, setUsuariosList] = useState([
     {
       id: 1,
       nome: 'João Silva',
@@ -70,7 +101,44 @@ const Configuracoes = () => {
       status: 'inativo',
       ultimoAcesso: '2024-05-10 09:15'
     }
-  ];
+  ]);
+
+  const [usuarioFormData, setUsuarioFormData] = useState({
+    nome: '',
+    email: '',
+    cargo: ''
+  });
+
+  const handleAdicionarUsuario = () => {
+    if (!usuarioFormData.nome || !usuarioFormData.email || !usuarioFormData.cargo) {
+      return;
+    }
+
+    const novoUsuario = {
+      id: usuariosList.length + 1,
+      nome: usuarioFormData.nome,
+      email: usuarioFormData.email,
+      cargo: usuarioFormData.cargo,
+      status: 'ativo',
+      ultimoAcesso: new Date().toLocaleString('pt-BR')
+    };
+
+    setUsuariosList([...usuariosList, novoUsuario]);
+    setUsuarioFormData({
+      nome: '',
+      email: '',
+      cargo: ''
+    });
+    setAdicionarUsuarioDialogOpen(false);
+  };
+
+  const handleToggleUsuarioStatus = (usuario) => {
+    setUsuariosList(usuariosList.map(u => 
+      u.id === usuario.id 
+        ? { ...u, status: u.status === 'ativo' ? 'inativo' : 'ativo' }
+        : u
+    ));
+  };
 
   const renderConfiguracoesGerais = () => (
     <div className="space-y-6">
@@ -345,15 +413,72 @@ const Configuracoes = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Usuários do Sistema</CardTitle>
-            <Button>
-              <Users className="w-4 h-4 mr-2" />
-              Adicionar Usuário
-            </Button>
+            <Dialog open={adicionarUsuarioDialogOpen} onOpenChange={setAdicionarUsuarioDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Users className="w-4 h-4 mr-2" />
+                  Adicionar Usuário
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Adicionar Usuário</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados do novo usuário
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="nome-usuario">Nome</Label>
+                    <Input 
+                      id="nome-usuario" 
+                      placeholder="Nome completo"
+                      value={usuarioFormData.nome}
+                      onChange={(e) => setUsuarioFormData({...usuarioFormData, nome: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email-usuario">Email</Label>
+                    <Input 
+                      id="email-usuario" 
+                      type="email" 
+                      placeholder="email@exemplo.com"
+                      value={usuarioFormData.email}
+                      onChange={(e) => setUsuarioFormData({...usuarioFormData, email: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="cargo-usuario">Cargo</Label>
+                    <Input 
+                      id="cargo-usuario" 
+                      placeholder="Cargo do usuário"
+                      value={usuarioFormData.cargo}
+                      onChange={(e) => setUsuarioFormData({...usuarioFormData, cargo: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => {
+                    setAdicionarUsuarioDialogOpen(false);
+                    setUsuarioFormData({
+                      nome: '',
+                      email: '',
+                      cargo: ''
+                    });
+                  }}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleAdicionarUsuario}>
+                    Adicionar
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {usuarios.map((usuario) => (
+            {usuariosList.map((usuario) => (
               <div key={usuario.id} className="flex items-center justify-between p-4 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center space-x-3">
@@ -369,10 +494,29 @@ const Configuracoes = () => {
                   <p className="text-xs text-gray-500">Último acesso: {usuario.ultimoAcesso}</p>
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setEditarUsuario(usuario);
+                      setUsuarioEditFormData({
+                        nome: usuario.nome,
+                        email: usuario.email,
+                        cargo: usuario.cargo
+                      });
+                    }}
+                  >
                     Editar
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      handleToggleUsuarioStatus(usuario);
+                      const acao = usuario.status === 'ativo' ? 'desativado' : 'ativado';
+                      toast.success(`Usuário ${usuario.nome} ${acao} com sucesso!`);
+                    }}
+                  >
                     {usuario.status === 'ativo' ? 'Desativar' : 'Ativar'}
                   </Button>
                 </div>
@@ -396,7 +540,10 @@ const Configuracoes = () => {
               <Label>Último Backup</Label>
               <p className="text-sm text-gray-600">15/05/2024 às 02:00</p>
             </div>
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={() => toast.info('Iniciando backup do sistema...')}
+            >
               <Download className="w-4 h-4 mr-2" />
               Fazer Backup
             </Button>
@@ -424,11 +571,17 @@ const Configuracoes = () => {
             <Input id="backup" type="file" accept=".zip,.sql" />
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={() => toast.warning('Selecione um arquivo de backup para restaurar. ATENÇÃO: Esta ação irá substituir os dados atuais!')}
+            >
               <Upload className="w-4 h-4 mr-2" />
               Restaurar
             </Button>
-            <Button variant="outline">
+            <Button 
+              variant="outline"
+              onClick={() => toast.info('Baixando último backup do sistema...')}
+            >
               <Download className="w-4 h-4 mr-2" />
               Baixar Backup
             </Button>
@@ -446,7 +599,11 @@ const Configuracoes = () => {
           <h1 className="text-3xl font-bold text-gray-900">Configurações</h1>
           <p className="text-gray-600 mt-2">Configurações do sistema e preferências</p>
         </div>
-        <Button>
+        <Button 
+          onClick={() => {
+            toast.success('Configurações salvas com sucesso!');
+          }}
+        >
           <Save className="w-4 h-4 mr-2" />
           Salvar Alterações
         </Button>
@@ -501,6 +658,62 @@ const Configuracoes = () => {
           {activeTab === 'backup' && renderBackupRestore()}
         </CardContent>
       </Card>
+
+      {/* Dialog de Editar Usuário */}
+      {editarUsuario && (
+        <Dialog open={!!editarUsuario} onOpenChange={() => setEditarUsuario(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Usuário</DialogTitle>
+              <DialogDescription>
+                Altere as informações do usuário
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-nome-usuario">Nome</Label>
+                <Input 
+                  id="edit-nome-usuario" 
+                  value={usuarioEditFormData.nome}
+                  onChange={(e) => setUsuarioEditFormData({...usuarioEditFormData, nome: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-email-usuario">Email</Label>
+                <Input 
+                  id="edit-email-usuario" 
+                  type="email"
+                  value={usuarioEditFormData.email}
+                  onChange={(e) => setUsuarioEditFormData({...usuarioEditFormData, email: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-cargo-usuario">Cargo</Label>
+                <Input 
+                  id="edit-cargo-usuario" 
+                  value={usuarioEditFormData.cargo}
+                  onChange={(e) => setUsuarioEditFormData({...usuarioEditFormData, cargo: e.target.value})}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setEditarUsuario(null);
+                setUsuarioEditFormData({
+                  nome: '',
+                  email: '',
+                  cargo: ''
+                });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditUsuario}>
+                Salvar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

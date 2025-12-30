@@ -3,6 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { 
   Plus, 
   Search, 
@@ -21,8 +24,19 @@ import {
 const Projetos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos');
+  const [novoProjetoDialogOpen, setNovoProjetoDialogOpen] = useState(false);
+  const [detalhesProjeto, setDetalhesProjeto] = useState(null);
+  const [editarProjeto, setEditarProjeto] = useState(null);
+  const [formData, setFormData] = useState({
+    nome: '',
+    cliente: '',
+    dataInicio: '',
+    dataFim: '',
+    orcamento: '',
+    prioridade: 'media'
+  });
 
-  const projetos = [
+  const [projetos, setProjetos] = useState([
     {
       id: 1,
       nome: 'Construção Galpão Industrial A',
@@ -83,7 +97,71 @@ const Projetos = () => {
       funcionarios: 6,
       prioridade: 'media'
     }
-  ];
+  ]);
+
+  const handleCreateProject = () => {
+    if (!formData.nome || !formData.cliente || !formData.dataInicio || !formData.dataFim || !formData.orcamento) {
+      return;
+    }
+
+    const newProject = {
+      id: projetos.length + 1,
+      nome: formData.nome,
+      cliente: formData.cliente,
+      status: 'pendente',
+      progresso: 0,
+      dataInicio: formData.dataInicio,
+      dataFim: formData.dataFim,
+      orcamento: parseFloat(formData.orcamento),
+      funcionarios: 0,
+      prioridade: formData.prioridade
+    };
+
+    setProjetos([...projetos, newProject]);
+    setFormData({
+      nome: '',
+      cliente: '',
+      dataInicio: '',
+      dataFim: '',
+      orcamento: '',
+      prioridade: 'media'
+    });
+    setNovoProjetoDialogOpen(false);
+  };
+
+  const handleEditProject = () => {
+    if (!editarProjeto || !formData.nome) return;
+
+    setProjetos(projetos.map(p => 
+      p.id === editarProjeto.id 
+        ? { 
+            ...p, 
+            nome: formData.nome,
+            cliente: formData.cliente,
+            status: formData.status || p.status,
+            dataInicio: formData.dataInicio || p.dataInicio,
+            dataFim: formData.dataFim || p.dataFim,
+            orcamento: formData.orcamento ? parseFloat(formData.orcamento) : p.orcamento,
+            prioridade: formData.prioridade || p.prioridade
+          }
+        : p
+    ));
+    setEditarProjeto(null);
+    setFormData({
+      nome: '',
+      cliente: '',
+      dataInicio: '',
+      dataFim: '',
+      orcamento: '',
+      prioridade: 'media'
+    });
+  };
+
+  const handleDeleteProject = (id) => {
+    if (window.confirm('Tem certeza que deseja excluir este projeto?')) {
+      setProjetos(projetos.filter(p => p.id !== id));
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -140,10 +218,105 @@ const Projetos = () => {
           <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Projetos</h1>
           <p className="text-gray-600 mt-2">Controle e acompanhamento de todos os projetos</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Projeto
-        </Button>
+        <Dialog open={novoProjetoDialogOpen} onOpenChange={setNovoProjetoDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Projeto
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Novo Projeto</DialogTitle>
+              <DialogDescription>
+                Preencha os dados para criar um novo projeto
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="nome-projeto">Nome do Projeto</Label>
+                <Input 
+                  id="nome-projeto" 
+                  placeholder="Ex: Construção Galpão Industrial"
+                  value={formData.nome}
+                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cliente-projeto">Cliente</Label>
+                <Input 
+                  id="cliente-projeto" 
+                  placeholder="Nome do cliente"
+                  value={formData.cliente}
+                  onChange={(e) => setFormData({...formData, cliente: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="data-inicio-projeto">Data de Início</Label>
+                  <Input 
+                    id="data-inicio-projeto" 
+                    type="date"
+                    value={formData.dataInicio}
+                    onChange={(e) => setFormData({...formData, dataInicio: e.target.value})}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="data-fim-projeto">Data de Término</Label>
+                  <Input 
+                    id="data-fim-projeto" 
+                    type="date"
+                    value={formData.dataFim}
+                    onChange={(e) => setFormData({...formData, dataFim: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="orcamento-projeto">Orçamento (R$)</Label>
+                  <Input 
+                    id="orcamento-projeto" 
+                    type="number" 
+                    placeholder="0.00"
+                    value={formData.orcamento}
+                    onChange={(e) => setFormData({...formData, orcamento: e.target.value})}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="prioridade-projeto">Prioridade</Label>
+                  <Select value={formData.prioridade} onValueChange={(value) => setFormData({...formData, prioridade: value})}>
+                    <SelectTrigger id="prioridade-projeto">
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alta">Alta</SelectItem>
+                      <SelectItem value="media">Média</SelectItem>
+                      <SelectItem value="baixa">Baixa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setNovoProjetoDialogOpen(false);
+                setFormData({
+                  nome: '',
+                  cliente: '',
+                  dataInicio: '',
+                  dataFim: '',
+                  orcamento: '',
+                  prioridade: 'media'
+                });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateProject}>
+                Criar Projeto
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Filtros e Busca */}
@@ -303,11 +476,38 @@ const Projetos = () => {
                   </div>
                   
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setDetalhesProjeto(projeto)}
+                    >
                       Detalhes
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setEditarProjeto(projeto);
+                        setFormData({
+                          nome: projeto.nome,
+                          cliente: projeto.cliente,
+                          dataInicio: projeto.dataInicio,
+                          dataFim: projeto.dataFim,
+                          orcamento: projeto.orcamento.toString(),
+                          prioridade: projeto.prioridade,
+                          status: projeto.status
+                        });
+                      }}
+                    >
                       Editar
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDeleteProject(projeto.id)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      Excluir
                     </Button>
                   </div>
                 </div>
@@ -327,6 +527,141 @@ const Projetos = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Dialog de Detalhes */}
+      {detalhesProjeto && (
+        <Dialog open={!!detalhesProjeto} onOpenChange={() => setDetalhesProjeto(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{detalhesProjeto.nome}</DialogTitle>
+              <DialogDescription>Detalhes do projeto</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <Label className="text-sm text-gray-600">Cliente</Label>
+                <p className="font-medium">{detalhesProjeto.cliente}</p>
+              </div>
+              <div>
+                <Label className="text-sm text-gray-600">Status</Label>
+                <Badge className={getStatusColor(detalhesProjeto.status)}>
+                  {detalhesProjeto.status.replace('_', ' ')}
+                </Badge>
+              </div>
+              <div>
+                <Label className="text-sm text-gray-600">Progresso</Label>
+                <p className="font-medium">{detalhesProjeto.progresso}%</p>
+              </div>
+              <div>
+                <Label className="text-sm text-gray-600">Orçamento</Label>
+                <p className="font-medium">{formatCurrency(detalhesProjeto.orcamento)}</p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Dialog de Edição */}
+      {editarProjeto && (
+        <Dialog open={!!editarProjeto} onOpenChange={() => {
+          setEditarProjeto(null);
+          setFormData({
+            nome: '',
+            cliente: '',
+            dataInicio: '',
+            dataFim: '',
+            orcamento: '',
+            prioridade: 'media'
+          });
+        }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Projeto</DialogTitle>
+              <DialogDescription>Altere as informações do projeto</DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-nome">Nome do Projeto</Label>
+                <Input 
+                  id="edit-nome" 
+                  value={formData.nome}
+                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-cliente">Cliente</Label>
+                <Input 
+                  id="edit-cliente" 
+                  value={formData.cliente}
+                  onChange={(e) => setFormData({...formData, cliente: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-status">Status</Label>
+                <Select value={formData.status || editarProjeto.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                  <SelectTrigger id="edit-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="em_andamento">Em Andamento</SelectItem>
+                    <SelectItem value="concluido">Concluído</SelectItem>
+                    <SelectItem value="pendente">Pendente</SelectItem>
+                    <SelectItem value="pausado">Pausado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-data-inicio">Data de Início</Label>
+                  <Input 
+                    id="edit-data-inicio" 
+                    type="date"
+                    value={formData.dataInicio}
+                    onChange={(e) => setFormData({...formData, dataInicio: e.target.value})}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-data-fim">Data de Término</Label>
+                  <Input 
+                    id="edit-data-fim" 
+                    type="date"
+                    value={formData.dataFim}
+                    onChange={(e) => setFormData({...formData, dataFim: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="edit-orcamento">Orçamento (R$)</Label>
+                <Input 
+                  id="edit-orcamento" 
+                  type="number"
+                  value={formData.orcamento}
+                  onChange={(e) => setFormData({...formData, orcamento: e.target.value})}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setEditarProjeto(null);
+                setFormData({
+                  nome: '',
+                  cliente: '',
+                  dataInicio: '',
+                  dataFim: '',
+                  orcamento: '',
+                  prioridade: 'media'
+                });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={() => {
+                handleEditProject();
+              }}>
+                Salvar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

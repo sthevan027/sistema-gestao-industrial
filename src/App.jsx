@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
-import CRM from './components/CRM';
-import KanbanBoard from './components/KanbanBoard';
-import SocialMedia from './components/SocialMedia';
 import ObraMonitoramento from './components/ObraMonitoramento';
-import Projetos from './components/Projetos';
 import Recursos from './components/Recursos';
 import Relatorios from './components/Relatorios';
 import Configuracoes from './components/Configuracoes';
+import { Toaster } from './components/ui/sonner';
 import './App.css';
 
 function App() {
@@ -18,18 +15,9 @@ function App() {
     try {
       switch (currentPage) {
         case 'dashboard':
-        case 'analytics':
           return <Dashboard />;
-        case 'crm':
-          return <CRM />;
-        case 'kanban':
-          return <KanbanBoard />;
-        case 'social':
-          return <SocialMedia />;
         case 'obra-monitoramento':
           return <ObraMonitoramento />;
-        case 'projetos':
-          return <Projetos />;
         case 'recursos':
           return <Recursos />;
         case 'relatorios':
@@ -42,18 +30,21 @@ function App() {
     } catch (error) {
       console.error('Erro ao renderizar página:', error);
       return (
-        <div className="p-6 text-white">
-          <h1>Erro na renderização</h1>
-          <p>{error.message}</p>
+        <div className="p-6 text-gray-900">
+          <h1 className="text-xl font-bold">Erro na renderização</h1>
+          <p className="text-gray-600">{error.message}</p>
         </div>
       );
     }
   };
 
   return (
-    <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
-      {renderPage()}
-    </Layout>
+    <>
+      <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
+        {renderPage()}
+      </Layout>
+      <Toaster />
+    </>
   );
 }
 

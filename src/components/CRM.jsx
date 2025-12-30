@@ -11,18 +11,74 @@ import {
   MoreVertical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { suppliers, clients } from '../data/mockData';
 
 const CRM = () => {
   const [activeTab, setActiveTab] = useState('suppliers');
   const [searchTerm, setSearchTerm] = useState('');
+  const [adicionarContatoDialogOpen, setAdicionarContatoDialogOpen] = useState(false);
+  const [contatoFormData, setContatoFormData] = useState({
+    nome: '',
+    email: '',
+    telefone: '',
+    tipo: 'fornecedor'
+  });
 
-  const filteredSuppliers = suppliers.filter(supplier =>
+  const [suppliersList, setSuppliersList] = useState(suppliers);
+  const [clientsList, setClientsList] = useState(clients);
+
+  const handleAdicionarContato = () => {
+    if (!contatoFormData.nome || !contatoFormData.email || !contatoFormData.telefone) {
+      return;
+    }
+
+    if (contatoFormData.tipo === 'fornecedor') {
+      const novoFornecedor = {
+        id: suppliersList.length + 1,
+        name: contatoFormData.nome,
+        contact: contatoFormData.nome,
+        email: contatoFormData.email,
+        phone: contatoFormData.telefone,
+        category: 'Categoria',
+        rating: 0,
+        lastOrder: new Date().toISOString().split('T')[0],
+        status: 'ativo'
+      };
+      setSuppliersList([...suppliersList, novoFornecedor]);
+    } else {
+      const novoCliente = {
+        id: clientsList.length + 1,
+        name: contatoFormData.nome,
+        contact: contatoFormData.nome,
+        email: contatoFormData.email,
+        phone: contatoFormData.telefone,
+        segment: 'Segmento',
+        revenue: 0,
+        lastPurchase: new Date().toISOString().split('T')[0],
+        status: 'ativo'
+      };
+      setClientsList([...clientsList, novoCliente]);
+    }
+
+    setContatoFormData({
+      nome: '',
+      email: '',
+      telefone: '',
+      tipo: 'fornecedor'
+    });
+    setAdicionarContatoDialogOpen(false);
+  };
+
+  const filteredSuppliers = suppliersList.filter(supplier =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.contact.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredClients = clients.filter(client =>
+  const filteredClients = clientsList.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.contact.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -67,10 +123,80 @@ const CRM = () => {
           <h1 className="text-2xl font-bold text-gray-900">CRM Industrial</h1>
           <p className="text-gray-600">Gerencie fornecedores e clientes</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Adicionar Contato
-        </Button>
+        <Dialog open={adicionarContatoDialogOpen} onOpenChange={setAdicionarContatoDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Contato
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Adicionar Contato</DialogTitle>
+              <DialogDescription>
+                Preencha os dados do novo contato
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="tipo-contato">Tipo</Label>
+                <Select value={contatoFormData.tipo} onValueChange={(value) => setContatoFormData({...contatoFormData, tipo: value})}>
+                  <SelectTrigger id="tipo-contato">
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fornecedor">Fornecedor</SelectItem>
+                    <SelectItem value="cliente">Cliente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="nome-contato">Nome</Label>
+                <Input 
+                  id="nome-contato" 
+                  placeholder="Nome do contato"
+                  value={contatoFormData.nome}
+                  onChange={(e) => setContatoFormData({...contatoFormData, nome: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="email-contato">Email</Label>
+                <Input 
+                  id="email-contato" 
+                  type="email" 
+                  placeholder="email@exemplo.com"
+                  value={contatoFormData.email}
+                  onChange={(e) => setContatoFormData({...contatoFormData, email: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="telefone-contato">Telefone</Label>
+                <Input 
+                  id="telefone-contato" 
+                  placeholder="(11) 99999-9999"
+                  value={contatoFormData.telefone}
+                  onChange={(e) => setContatoFormData({...contatoFormData, telefone: e.target.value})}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setAdicionarContatoDialogOpen(false);
+                setContatoFormData({
+                  nome: '',
+                  email: '',
+                  telefone: '',
+                  tipo: 'fornecedor'
+                });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAdicionarContato}>
+                Adicionar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Tabs */}
@@ -84,7 +210,7 @@ const CRM = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Fornecedores ({suppliers.length})
+            Fornecedores ({suppliersList.length})
           </button>
           <button
             onClick={() => setActiveTab('clients')}
@@ -94,7 +220,7 @@ const CRM = () => {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Clientes ({clients.length})
+            Clientes ({clientsList.length})
           </button>
         </nav>
       </div>

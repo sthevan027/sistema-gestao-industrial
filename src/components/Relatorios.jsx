@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
+import { toast } from 'sonner';
 import { 
   BarChart3, 
   Download, 
@@ -456,7 +457,11 @@ const Relatorios = () => {
             <Calendar className="w-4 h-4 mr-2" />
             Período
           </Button>
-          <Button>
+          <Button 
+            onClick={() => {
+              toast.info('Exportando relatório...');
+            }}
+          >
             <Download className="w-4 h-4 mr-2" />
             Exportar
           </Button>

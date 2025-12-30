@@ -9,10 +9,54 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { kanbanTasks } from '../data/mockData';
 
 const KanbanBoard = () => {
   const [tasks, setTasks] = useState(kanbanTasks);
+  const [novaTarefaDialogOpen, setNovaTarefaDialogOpen] = useState(false);
+  const [tarefaFormData, setTarefaFormData] = useState({
+    titulo: '',
+    descricao: '',
+    responsavel: '',
+    prazo: '',
+    prioridade: 'media',
+    coluna: 'backlog'
+  });
+
+  const handleCreateTask = () => {
+    if (!tarefaFormData.titulo || !tarefaFormData.responsavel || !tarefaFormData.prazo) {
+      return;
+    }
+
+    const newTask = {
+      id: Object.values(tasks).flat().length + 1,
+      title: tarefaFormData.titulo,
+      description: tarefaFormData.descricao,
+      priority: tarefaFormData.prioridade,
+      assignee: tarefaFormData.responsavel,
+      dueDate: tarefaFormData.prazo
+    };
+
+    const coluna = tarefaFormData.coluna || 'backlog';
+    setTasks({
+      ...tasks,
+      [coluna]: [...tasks[coluna], newTask]
+    });
+
+    setTarefaFormData({
+      titulo: '',
+      descricao: '',
+      responsavel: '',
+      prazo: '',
+      prioridade: 'media',
+      coluna: 'backlog'
+    });
+    setNovaTarefaDialogOpen(false);
+  };
 
   const columns = [
     { id: 'backlog', title: 'Backlog', color: 'bg-gray-100', count: tasks.backlog.length },
@@ -84,10 +128,107 @@ const KanbanBoard = () => {
           <h1 className="text-2xl font-bold text-gray-900">Gestão de Tarefas</h1>
           <p className="text-gray-600">Kanban para ordens de produção e manutenção</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Tarefa
-        </Button>
+        <Dialog open={novaTarefaDialogOpen} onOpenChange={setNovaTarefaDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Tarefa
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Nova Tarefa</DialogTitle>
+              <DialogDescription>
+                Preencha os dados da nova tarefa
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="titulo-tarefa">Título</Label>
+                <Input 
+                  id="titulo-tarefa" 
+                  placeholder="Nome da tarefa"
+                  value={tarefaFormData.titulo}
+                  onChange={(e) => setTarefaFormData({...tarefaFormData, titulo: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="descricao-tarefa">Descrição</Label>
+                <Input 
+                  id="descricao-tarefa" 
+                  placeholder="Descrição da tarefa"
+                  value={tarefaFormData.descricao}
+                  onChange={(e) => setTarefaFormData({...tarefaFormData, descricao: e.target.value})}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="responsavel-tarefa">Responsável</Label>
+                <Input 
+                  id="responsavel-tarefa" 
+                  placeholder="Nome do responsável"
+                  value={tarefaFormData.responsavel}
+                  onChange={(e) => setTarefaFormData({...tarefaFormData, responsavel: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="prazo-tarefa">Prazo</Label>
+                  <Input 
+                    id="prazo-tarefa" 
+                    type="date"
+                    value={tarefaFormData.prazo}
+                    onChange={(e) => setTarefaFormData({...tarefaFormData, prazo: e.target.value})}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="prioridade-tarefa">Prioridade</Label>
+                  <Select value={tarefaFormData.prioridade} onValueChange={(value) => setTarefaFormData({...tarefaFormData, prioridade: value})}>
+                    <SelectTrigger id="prioridade-tarefa">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="alta">Alta</SelectItem>
+                      <SelectItem value="média">Média</SelectItem>
+                      <SelectItem value="baixa">Baixa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="coluna-tarefa">Coluna</Label>
+                <Select value={tarefaFormData.coluna} onValueChange={(value) => setTarefaFormData({...tarefaFormData, coluna: value})}>
+                  <SelectTrigger id="coluna-tarefa">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="backlog">Backlog</SelectItem>
+                    <SelectItem value="inProgress">Em Progresso</SelectItem>
+                    <SelectItem value="testing">Teste/Validação</SelectItem>
+                    <SelectItem value="done">Concluído</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setNovaTarefaDialogOpen(false);
+                setTarefaFormData({
+                  titulo: '',
+                  descricao: '',
+                  responsavel: '',
+                  prazo: '',
+                  prioridade: 'media',
+                  coluna: 'backlog'
+                });
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateTask}>
+                Criar Tarefa
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
@@ -121,6 +262,13 @@ const KanbanBoard = () => {
               <Button 
                 variant="ghost" 
                 className="w-full border-2 border-dashed border-gray-300 hover:border-gray-400 text-gray-500 hover:text-gray-600"
+                onClick={() => {
+                  setTarefaFormData({
+                    ...tarefaFormData,
+                    coluna: column.id
+                  });
+                  setNovaTarefaDialogOpen(true);
+                }}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar tarefa
